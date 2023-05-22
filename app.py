@@ -23,6 +23,11 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///banco.bd'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
+"""
+Ao usar o decorador @app.before_first_request, você garante que a função especificada seja executada somente uma vez, no início da execução da aplicação. Isso pode ser útil para configurar o ambiente da aplicação antes de lidar com as solicitações dos usuários e garantir que tudo esteja pronto para funcionar corretamente.
+"""
+
+
 @app.before_first_request
 def cria_banco():
     banco.create_all()

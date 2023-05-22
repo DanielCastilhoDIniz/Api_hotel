@@ -62,34 +62,31 @@ class Hoteis(Resource):
 
 
 class Hotel(Resource):
-
+    # validar os argumentos passados nas solicitações HTTP.
     argumento = reqparse.RequestParser()
     argumento.add_argument('nome')
     argumento.add_argument('estrelas')
     argumento.add_argument('diarias')
     argumento.add_argument('cidade')
 
-    # Método para encontrar um hotel pelo ID
-    def find_hotel(hotel_id):
-        for hotel in hoteis:
-            if hotel['hotel_id'] == hotel_id:
-                return hotel
-        return None
+
 
     def get(self, hotel_id):
         hotel = Hotel.find_hotel(hotel_id)
         if hotel:
             return hotel
-        return {'message': 'Hotel not found'}, 404  # not found
+        return {'message': 'Hotel not found'}, 404  # not found.
 
     def post(self, hotel_id):
-
-        # Analisa os argumentos da requisição usando o RequestParser
+        if HotelModel.find_hotel(hotel_id):
+            return {"message":"Hotel id {} already exists".format(hotel_id)}, 400 # bad request
+        
+        # Analisa os argumentos da requisição usando o RequestParser.
         dados = Hotel.argumento.parse_args()
-        hotel_objeto = HotelModel(hotel_id,**dados)
-        novo_hotel = hotel_objeto.json()
-        hoteis.append(novo_hotel)
-        return novo_hotel, 200
+        hotel = HotelModel(hotel_id,**dados)
+        hotel.save_hotel()
+        return hotel.json()
+       
 
     def put(self, hotel_id):
         dados = Hotel.argumento.parse_args()
@@ -98,7 +95,7 @@ class Hotel(Resource):
         # novo_hotel = {"hotel_id": hotel_id, **dados}
         hotel = Hotel.find_hotel(hotel_id)
         if hotel:
-            # Atualiza as informações do hotel com os novos dados
+            # Atualiza as informações do hotel com os novos dados.
             hotel.update(novo_hotel)
             return novo_hotel, 200  # ok
         hoteis.append(novo_hotel)
