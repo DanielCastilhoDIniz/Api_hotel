@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_restful import Resource, Api
 from Resources.hotel import Hoteis, Hotel
-
+from Resources.usuario import User, UserRegister
 
 """
 # instanciar a classe FLask
@@ -53,6 +53,9 @@ Essa abordagem permite criar endpoints específicos para a manipulação de um h
 Essa funcionalidade é útil quando você precisa realizar operações específicas em um único recurso em sua API.
 """
 api. add_resource(Hotel, '/hoteis/<string:hotel_id>')
+
+api.add_resource(User, '/usuarios/<int:user_id>')
+api.add_resource(UserRegister, '/cadastro')
 
 
 if __name__ == '__main__':
