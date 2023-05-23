@@ -37,3 +37,13 @@ class HotelModel(banco.Model):
     def save_hotel(self):
         banco.session.add(self)
         banco.session.commit()
+
+    def update_hotel(self, nome, estrelas, diarias, cidade):
+        self.nome = nome
+        self.estrelas = estrelas
+        self.diarias = diarias
+        self.cidade = cidade
+
+    def delete_hotel(self):
+        banco.session.delete(self)
+        banco.session.commit()
