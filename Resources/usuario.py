@@ -2,7 +2,8 @@ from flask import Flask
 from flask_restful import Resource, reqparse
 from models.usuario import UserModel
 from flask_jwt_extended import create_access_token
-from Api_hotel.app import bcrypt
+
+import jwt
 
 
 atributos = reqparse.RequestParser()
@@ -53,8 +54,9 @@ class UserLogin(Resource):
         dados = atributos.parse_args()
 
         user = UserModel.find_by_login(dados['login'])
+        
         if user and bcrypt.check_password_hash(dados['senha'], user.senha):
-            token_de_acesso = create_access_token(identify=user.user_id)
+            token_de_acesso = jwt.encode({"identify": user.user_id}, "sua_chave_secreta", algorithm="HS256")
             return {'access_token': token_de_acesso}, 200
         # Unauthorized
-        return {'message': 'The usermane or password is incorrect'}, 401
+        return {'message': 'The username or password is incorrect'}, 401

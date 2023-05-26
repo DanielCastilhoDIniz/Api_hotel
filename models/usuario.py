@@ -1,4 +1,5 @@
 from sql_alchemy import banco
+import hashlib
 
 
 class UserModel(banco.Model):

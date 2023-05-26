@@ -3,7 +3,7 @@ from flask_restful import Resource, Api
 from Resources.hotel import Hoteis, Hotel
 from Resources.usuario import User, UserRegister, UserLogin
 from flask_jwt_extended import JWTManager
-from flask_bcrypt import Bcrypt
+from sql_alchemy import banco
 
 
 """
@@ -29,7 +29,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.config['JWT_SECRET_KEY'] = "ksjfksfsgfsgffdskfgs"
 
-bcrypt = Bcrypt(app)
 
 """
 Ao usar o decorador @app.before_first_request, você garante que a função especificada seja executada somente uma vez, no início da execução da aplicação. Isso pode ser útil para configurar o ambiente da aplicação antes de lidar com as solicitações dos usuários e garantir que tudo esteja pronto para funcionar corretamente.
@@ -65,6 +64,7 @@ api. add_resource(Hotel, '/hoteis/<string:hotel_id>')
 api.add_resource(User, '/usuarios/<int:user_id>')
 api.add_resource(UserRegister, '/cadastro')
 api.add_resource(UserLogin, '/login')
+
 
 
 if __name__ == '__main__':
