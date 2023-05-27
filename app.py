@@ -1,9 +1,10 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_restful import Resource, Api
 from Resources.hotel import Hoteis, Hotel
-from Resources.usuario import User, UserRegister, UserLogin
+from Resources.usuario import User, UserRegister, UserLogin, UserLogout
 from flask_jwt_extended import JWTManager
 from sql_alchemy import banco
+from blacklist import BLACKLIST
 
 
 """
@@ -28,11 +29,23 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///banco.bd'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.config['JWT_SECRET_KEY'] = "ksjfksfsgfsgffdskfgs"
+app.config['JWT_BLACKLIST_ENABLED'] = True
 
 
 """
 Ao usar o decorador @app.before_first_request, você garante que a função especificada seja executada somente uma vez, no início da execução da aplicação. Isso pode ser útil para configurar o ambiente da aplicação antes de lidar com as solicitações dos usuários e garantir que tudo esteja pronto para funcionar corretamente.
 """
+
+
+@jwt.token_in_blocklist_loader
+def verifica_blacklist(self, token):
+    return token['jti'] in BLACKLIST
+
+
+@jwt.revoked_token_loader
+def token_de_acesso_invalidado(jwt_header, jwt_payload):
+    # unauthorized
+    return jsonify({'message': 'you have been logged out'}), 401
 
 
 @app.before_first_request
@@ -64,7 +77,7 @@ api. add_resource(Hotel, '/hoteis/<string:hotel_id>')
 api.add_resource(User, '/usuarios/<int:user_id>')
 api.add_resource(UserRegister, '/cadastro')
 api.add_resource(UserLogin, '/login')
-
+api.add_resource(UserLogout, '/logout')
 
 
 if __name__ == '__main__':
