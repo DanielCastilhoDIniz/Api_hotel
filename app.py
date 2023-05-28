@@ -2,6 +2,7 @@ from flask import Flask, jsonify
 from flask_restful import Resource, Api
 from Resources.hotel import Hoteis, Hotel
 from Resources.usuario import User, UserRegister, UserLogin, UserLogout
+from Resources.site import Site, Sites
 from flask_jwt_extended import JWTManager
 from blacklist import BLACKLIST
 
@@ -55,13 +56,14 @@ Essa abordagem permite criar endpoints específicos para a manipulação de um h
 
 Essa funcionalidade é útil quando você precisa realizar operações específicas em um único recurso em sua API.
 """
-api. add_resource(Hotel, '/hoteis/<string:hotel_id>')
 
+api.add_resource(Hotel, '/hoteis/<string:hotel_id>')
 api.add_resource(User, '/usuarios/<int:user_id>')
 api.add_resource(UserRegister, '/cadastro')
 api.add_resource(UserLogin, '/login')
 api.add_resource(UserLogout, '/logout')
-
+api.add_resource(Sites, '/sites')
+api.add_resource(Site, '/sites/<string:url>')
 
 if __name__ == '__main__':
     from sql_alchemy import banco
