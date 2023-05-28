@@ -1,9 +1,7 @@
-from flask import Flask
 from flask_restful import Resource, reqparse
 from models.hotel import HotelModel
 from flask_jwt_extended import jwt_required
 import sqlite3
-
 
 def normalize_path_params(cidade=None,
                           estrelas_min=0,
@@ -38,7 +36,7 @@ path_params.add_argument('cidade', type=str, location='args')
 path_params.add_argument('estrelas_min', type=float, location='args')
 path_params.add_argument('estrelas_max', type=float, location='args')
 path_params.add_argument('diaria_min', type=float, location='args')
-path_params.add_argument('diaria_max', type=float)
+path_params.add_argument('diaria_max', type=float, location='args')
 path_params.add_argument('limit', type=float, location='args')
 path_params.add_argument('offset', type=float, location='args')
 
@@ -48,50 +46,50 @@ class Hoteis(Resource):
     # Método GET para a classe Hoteis
 
     def get(self):
-        connection = sqlite3.connect('banco.db')
+        connection = sqlite3.connect('instance/banco.db')
         cursor = connection.cursor()
 
         dados = path_params.parse_args()
-        dados_validos = {chave: dados['chave']
-                         for chave in dados if dados['chave'] is not None}
+        dados_validos = {chave:dados[chave] for chave in dados if dados[chave] is not None}
         parametros = normalize_path_params(**dados_validos)
 
-        if not parametros.get('cidade', force=True):
-            consulta = " SELECT * FROM hoteis \
-            WHERE (estrelas > ? and estrelas < ?) \
-            and(diaria > ? and diaria < ?)\
+        if not parametros.get('cidade'):
+            consulta = "SELECT * FROM hoteis \
+            WHERE (estrelas >= ? and estrelas <= ?) \
+            and (diaria >= ? and diaria <= ?) \
             LIMIT ? OFFSET ?"
-            tupla = tuple([parametros['chave'] for chave in parametros])
-            resultado = cursor.execute(consulta, (tupla))
+            tupla = tuple([parametros[chave] for chave in parametros])
+            resultado = cursor.execute(consulta, tupla)
         else:
-            consulta = " SELECT * FROM hoteis \
-            WHERE (estrelas > ? and estrelas < ?) \
-            and(diaria > ? and diaria < ?)\
-            and cidade =? LIMIT ? OFFSET ?"
-            tupla = tuple([parametros['chave'] for chave in parametros])
-            resultado = cursor.execute(consulta, (tupla))
+            consulta = "SELECT * FROM hoteis \
+            WHERE (estrelas >= ? and estrelas <= ?) \
+            and (diaria >= ? and diaria <= ?) \
+            and cidade = ? LIMIT ? OFFSET ?"
+            tupla = tuple([parametros[chave] for chave in parametros])
+            resultado = cursor.execute(consulta, tupla)
 
         hoteis = []
         for linha in resultado:
             hoteis.append({
-                'hotel_id': linha[0],
-                'nome': linha[1],
-                'estrelas': linha[2],
-                'diarias': linha[3],
-                '': linha[4]
+            'hotel_id': linha[0] ,
+            'nome': linha[1],
+            'estrelas': linha[2],
+            'diaria': linha[3],
+            'cidade': linha[4]
             })
-        return hoteis.json()
+
+        return {'hoteis': hoteis} # SELECT * FROM hoteis
 
 
 class Hotel(Resource):
-    # validar os argumentos passados nas solicitações HTTP.
-    argumento = reqparse.RequestParser()
-    argumento.add_argument('nome', type=str, required=True,
+    # validar os atributoss passados nas solicitações HTTP.
+    atributos = reqparse.RequestParser()
+    atributos.add_argument('nome', type=str, required=True,
                            help="The field 'nome' cannot be left blank")
-    argumento.add_argument('estrelas', type=float, required=True,
+    atributos.add_argument('estrelas', type=float, required=True,
                            help="he field 'estrelas' cannot be left blank")
-    argumento.add_argument('diarias')
-    argumento.add_argument('cidade')
+    atributos.add_argument('diaria',required=True)
+    atributos.add_argument('cidade')
 
     def get(self, hotel_id):
         hotel = HotelModel.find_hotel(hotel_id)
@@ -106,8 +104,8 @@ class Hotel(Resource):
             # Bad Request
             return {"message": "Hotel id {} already exists".format(hotel_id)}, 400
 
-        # Analisa os argumentos da requisição usando o RequestParser.
-        dados = Hotel.argumento.parse_args()
+        # Analisa os atributoss da requisição usando o RequestParser.
+        dados = Hotel.atributos.parse_args()
         hotel = HotelModel(hotel_id, **dados)
         try:
             hotel.save_hotel()
@@ -118,7 +116,7 @@ class Hotel(Resource):
 
     @jwt_required()
     def put(self, hotel_id):
-        dados = Hotel.argumento.parse_args()
+        dados = Hotel.atributos.parse_args()
         hotel_found = HotelModel.find_hotel(hotel_id)
         if hotel_found:
             # Atualiza as informações do hotel com os novos dados.

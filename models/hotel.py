@@ -3,30 +3,29 @@ from sql_alchemy import banco
 
 # Define the HotelModel class
 class HotelModel(banco.Model):
-    __table_name__ = 'hoteis'
-    # Define the columns of the table
+    __tablename__ = 'hoteis'
     hotel_id = banco.Column(banco.String, primary_key=True)
     nome = banco.Column(banco.String(80))
     estrelas = banco.Column(banco.Float(precision=1))
-    diarias = banco.Column(banco.Float(precision=2))
+    diaria = banco.Column(banco.Float(precision=2))
     cidade = banco.Column(banco.String(40))
 
     # inicializando os atributos de um objeto da classe
-    def __init__(self, hotel_id, nome, estrelas, diarias, cidade):
+    def __init__(self, hotel_id, nome, estrelas, diaria, cidade):
         self.hotel_id = hotel_id
         self.nome = nome
         self.estrelas = estrelas
-        self.diarias = diarias
+        self.diaria = diaria
         self.cidade = cidade
 
     # Return the hotel information as a JSON object
     def json(self):
         return {
-            "hotel_id": self.hotel_id,
-            "nome": self.nome,
-            "estrelas": self.estrelas,
-            "diarias": self.diarias,
-            "cidade": self.cidade
+            'hotel_id': self.hotel_id,
+            'nome': self.nome,
+            'estrelas': self.estrelas,
+            'diaria': self.diaria,
+            'cidade': self.cidade
         }
 
     @classmethod
@@ -43,10 +42,10 @@ class HotelModel(banco.Model):
         banco.session.commit()
 
      # Update the hotel attributes
-    def update_hotel(self, nome, estrelas, diarias, cidade):
+    def update_hotel(self, nome, estrelas, diaria, cidade):
         self.nome = nome
         self.estrelas = estrelas
-        self.diarias = diarias
+        self.diaria = diaria
         self.cidade = cidade
 
     def delete_hotel(self):

@@ -3,7 +3,6 @@ from flask_restful import Resource, Api
 from Resources.hotel import Hoteis, Hotel
 from Resources.usuario import User, UserRegister, UserLogin, UserLogout
 from flask_jwt_extended import JWTManager
-from sql_alchemy import banco
 from blacklist import BLACKLIST
 
 
@@ -13,28 +12,17 @@ O objeto app é uma instância da classe Flask e representa sua aplicação Flas
 Ele será usado para configurar e definir as rotas, bem como para lidar com solicitações HTTP.
 """
 app = Flask(__name__)
-
-"""
-# cria o objeto "api"  para criação API RESTful
-O objeto api é uma instância da classe Api do Flask-RESTful, que é uma extensão do Flask para criação de APIs RESTful de forma simples. A classe Api fornece recursos para criar, configurar e definir endpoints de API.
-
-A linha api = Api(app) cria uma instância da classe Api e associa o objeto api ao aplicativo Flask app. Isso permite que você use as funcionalidades do Flask-RESTful no seu aplicativo Flask.
-"""
-api = Api(app)
-
-jwt = JWTManager(app)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///banco.bd'
-
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///banco.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
 app.config['JWT_SECRET_KEY'] = "ksjfksfsgfsgffdskfgs"
 app.config['JWT_BLACKLIST_ENABLED'] = True
+api = Api(app)
+jwt = JWTManager(app)
 
 
-"""
-Ao usar o decorador @app.before_first_request, você garante que a função especificada seja executada somente uma vez, no início da execução da aplicação. Isso pode ser útil para configurar o ambiente da aplicação antes de lidar com as solicitações dos usuários e garantir que tudo esteja pronto para funcionar corretamente.
-"""
+@app.before_first_request
+def cria_banco():
+    banco.create_all()
 
 
 @jwt.token_in_blocklist_loader
@@ -45,12 +33,7 @@ def verifica_blacklist(self, token):
 @jwt.revoked_token_loader
 def token_de_acesso_invalidado(jwt_header, jwt_payload):
     # unauthorized
-    return jsonify({'message': 'you have been logged out'}), 401
-
-
-@app.before_first_request
-def cria_banco():
-    banco.create_all()
+    return jsonify({'message': 'you have been logged out.'}), 401
 
 
 """

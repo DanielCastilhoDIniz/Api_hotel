@@ -3,7 +3,7 @@ import hashlib
 
 
 class UserModel(banco.Model):
-    __table_name__ = 'usuarios'
+    __tablename__ = 'usuarios'
 
     user_id = banco.Column(banco.Integer, primary_key=True)
     login = banco.Column(banco.String(40))
