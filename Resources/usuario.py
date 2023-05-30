@@ -4,6 +4,7 @@ from models.usuario import UserModel
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt
 from passlib.hash import pbkdf2_sha256, bcrypt
 from blacklist import BLACKLIST
+import traceback
 
 
 import jwt
@@ -14,6 +15,7 @@ atributos.add_argument('login', type=str, required=True,
                        help="te field 'login' cannot be left blanc")
 atributos.add_argument('senha', type=str, required=True,
                        help="te field 'senha' cannot be left blanc")
+atributos.add_argument('email', type=str)
 atributos.add_argument('ativado', type=bool)
 
 
@@ -43,14 +45,24 @@ class UserRegister(Resource):
     # cadastro
     def post(self):
         dados = atributos.parse_args()
+        if not dados.get('email') or dados.get('email' is None):
+            return {"message":"The field 'email' cannot be left blank."}, 400
+        
+        if UserModel.find_by_email(dados['email']):
+            return {"message":"The '{}' already exists".format(dados['email'])}, 400
 
         if UserModel.find_by_login(dados['login']):
-
             return {"message": " The login '{}'already exist".format(dados['login'])}, 400 # Bad request
 
         user = UserModel(**dados)
         user.ativado = False
-        user.save_user()
+        try:
+            user.save_user()
+            user.send_confirmation_email()
+        except:
+            user.delete_user()
+            traceback.print_exc()
+            return {"message":"An internal server error has ocurred."}, 500
         return {"message": "User created successfully"}, 201  # created
 
 
