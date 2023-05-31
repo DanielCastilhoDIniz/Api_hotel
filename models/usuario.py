@@ -1,10 +1,10 @@
 from sql_alchemy import banco
 from flask import request, url_for
 from requests import post
-from models.keys import MAILGUN_API_KEY
+from models.keys import MAILGUN_API_KEY, MAILGUN_DOMAIN
 
 
-MAILGUN_DOMAIN ="3305d42da93d1e1a0fd655998b89a353-5d9bd83c-2024718a"
+
 FROM_TITLE ='Confirmação'
 FROM_EMAIL = 'no-replay@restapihotel.com'
 
