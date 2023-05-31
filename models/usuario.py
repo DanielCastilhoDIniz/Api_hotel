@@ -1,12 +1,14 @@
 from sql_alchemy import banco
 from flask import request, url_for
 from requests import post
-from models.keys import MAILGUN_API_KEY, MAILGUN_DOMAIN
-
+from models.keys import MAILGUN_API_KEY, MAILGUN_DOMAIN, PASSWORD,FROM_EMAIL
+import smtplib
+import email.message
 
 
 FROM_TITLE ='Confirmação'
-FROM_EMAIL = 'no-replay@restapihotel.com'
+
+PASSWORD
 
 class UserModel(banco.Model):
     __tablename__ = 'usuarios'
@@ -28,15 +30,32 @@ class UserModel(banco.Model):
         # http://127.0.0.1:5000/confirmacao/{user_id}'
         link = request.url_root[:-1] + url_for('userconfirm', user_id=self.user_id)
 
-        return post('https://api.mailgun.net/v3/{}/messages'.format(MAILGUN_DOMAIN), 
-                    auth=("api", MAILGUN_API_KEY),
-                    data={"from": "{} <{}>".format(FROM_TITLE, FROM_EMAIL),
-                          "to": self.email,
-                          "subject": "Confirmação de cadastro",
-                          "text": "Confirme seu cadastro clicando no link a seguir: {} ".format(link),
-                          "html":"<html><p>Confirme seu cadastro clicando no link a seguir:<a href='{}'> CONFIRMAR EMAIL</a></p></html>".format(link)
-                          }
-                    )
+        corpo_email = "<p>Confirme seu cadastro clicando no link a seguir:<a href='{}'> CONFIRMAR EMAIL</a></p></html></p>".format(link)
+
+        msg = email.message.Message()
+        msg['Subject'] = "do-not-reply"
+        msg['From'] = FROM_EMAIL
+        msg['To'] = self.email
+        password = PASSWORD 
+        msg.add_header('Content-Type', 'text/html')
+        msg.set_payload(corpo_email)
+
+        s = smtplib.SMTP('smtp.gmail.com: 587')
+        s.starttls()
+        # Login Credentials for sending the mail
+        s.login(msg['From'], password)
+        return s.sendmail(msg['From'], [msg['To']], msg.as_string().encode('utf-8'))
+        # print('Email enviado')
+        # cogigo para o mailgun
+        # return post('https://api.mailgun.net/v3/{}/messages'.format(MAILGUN_DOMAIN), 
+        #             auth=("api", MAILGUN_API_KEY),
+        #             data={"from": "{} <{}>".format(FROM_TITLE, FROM_EMAIL),
+        #                   "to": self.email,
+        #                   "subject": "Confirmação de cadastro",
+        #                   "text": "Confirme seu cadastro clicando no link a seguir: {} ".format(link),
+        #                   "html":"<html><p>Confirme seu cadastro clicando no link a seguir:<a href='{}'> CONFIRMAR EMAIL</a></p></html>".format(link)
+        #                   }
+        #             )
           
 
     def json(self):
